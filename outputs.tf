@@ -29,9 +29,9 @@ output "user_access_keys" {
   value = {
     for k, v in aws_iam_access_key.this :
     k => {
-      id                 = v.id
-      secret             = try(v.secret, null)                 # only available if pgp_key not set
-      encrypted_secret   = try(v.encrypted_secret, null)       # available if pgp_key set
+      id                   = v.id
+      secret               = try(v.secret, null)           # only available if pgp_key not set
+      encrypted_secret     = try(v.encrypted_secret, null) # available if pgp_key set
       ses_smtp_password_v4 = try(v.ses_smtp_password_v4, null)
     }
   }

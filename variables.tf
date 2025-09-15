@@ -30,29 +30,29 @@ Fields:
 - create_instance_profile (bool, optional, default false)
 EOT
   type = list(object({
-    name                        = string
-    path                        = optional(string, "/")
-    description                 = optional(string)
-    max_session_duration        = optional(number)
-    permissions_boundary_arn    = optional(string)
-    tags                        = optional(map(string), {})
-    assume_role_policy_json     = optional(string)
+    name                     = string
+    path                     = optional(string, "/")
+    description              = optional(string)
+    max_session_duration     = optional(number)
+    permissions_boundary_arn = optional(string)
+    tags                     = optional(map(string), {})
+    assume_role_policy_json  = optional(string)
     trust = optional(object({
-      service_principals  = optional(list(string), [])
-      aws_principals      = optional(list(string), [])
-      federated_principals= optional(list(string), [])
-      external_id         = optional(list(string), [])
-      conditions          = optional(list(object({
+      service_principals   = optional(list(string), [])
+      aws_principals       = optional(list(string), [])
+      federated_principals = optional(list(string), [])
+      external_id          = optional(list(string), [])
+      conditions = optional(list(object({
         test     = string
         variable = string
         values   = list(string)
       })), [])
-      sts_actions         = optional(list(string), ["sts:AssumeRole"])
-      federated_actions   = optional(list(string), ["sts:AssumeRoleWithWebIdentity"])
+      sts_actions       = optional(list(string), ["sts:AssumeRole"])
+      federated_actions = optional(list(string), ["sts:AssumeRoleWithWebIdentity"])
     }), null)
-    managed_policy_arns         = optional(list(string), [])
-    inline_policies             = optional(map(string), {})
-    create_instance_profile     = optional(bool, false)
+    managed_policy_arns     = optional(list(string), [])
+    inline_policies         = optional(map(string), {})
+    create_instance_profile = optional(bool, false)
   }))
   default = []
 }
@@ -83,7 +83,7 @@ EOT
     description = optional(string)
     tags        = optional(map(string), {})
     policy_json = optional(string)
-    statements  = optional(list(object({
+    statements = optional(list(object({
       sid       = optional(string)
       effect    = string
       actions   = list(string)
@@ -133,15 +133,15 @@ IAM users to create.
 - pgp_key (string, optional) — if set, will PGP-encrypt the secret access key
 EOT
   type = list(object({
-    name                      = string
-    path                      = optional(string)
-    permissions_boundary_arn  = optional(string)
-    tags                      = optional(map(string), {})
-    groups                    = optional(list(string), [])
-    managed_policy_arns       = optional(list(string), [])
-    inline_policies           = optional(map(string), {})
-    create_access_key         = optional(bool, false)
-    pgp_key                   = optional(string)
+    name                     = string
+    path                     = optional(string)
+    permissions_boundary_arn = optional(string)
+    tags                     = optional(map(string), {})
+    groups                   = optional(list(string), [])
+    managed_policy_arns      = optional(list(string), [])
+    inline_policies          = optional(map(string), {})
+    create_access_key        = optional(bool, false)
+    pgp_key                  = optional(string)
   }))
   default = []
 }

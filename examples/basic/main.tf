@@ -23,7 +23,7 @@ module "iam" {
       name = "app-read-logs"
       statements = [{
         effect    = "Allow"
-        actions   = ["logs:Describe*","logs:Get*","logs:FilterLogEvents"]
+        actions   = ["logs:Describe*", "logs:Get*", "logs:FilterLogEvents"]
         resources = ["*"]
       }]
     }
@@ -31,9 +31,9 @@ module "iam" {
 
   roles = [
     {
-      name = "ec2-dev-role"
-      trust = { service_principals = ["ec2.amazonaws.com"] }
-      managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
+      name                    = "ec2-dev-role"
+      trust                   = { service_principals = ["ec2.amazonaws.com"] }
+      managed_policy_arns     = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
       create_instance_profile = true
     }
   ]

@@ -48,7 +48,7 @@ locals {
           policy_json = pjson
         }
       ]
-    ]) : item.key => {
+      ]) : item.key => {
       role        = item.role
       policy_name = item.policy_name
       policy_json = item.policy_json
@@ -65,7 +65,7 @@ locals {
           policy_json = pjson
         }
       ]
-    ]) : item.key => {
+      ]) : item.key => {
       group       = item.group
       policy_name = item.policy_name
       policy_json = item.policy_json
@@ -82,7 +82,7 @@ locals {
           policy_json = pjson
         }
       ]
-    ]) : item.key => {
+      ]) : item.key => {
       user        = item.user
       policy_name = item.policy_name
       policy_json = item.policy_json
