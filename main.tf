@@ -6,6 +6,7 @@ locals {
 
   roles_by_name = { for r in var.roles : r.name => r }
 
+  # --- Attachments as lists (kept same shape) ---
   role_policy_attachments = flatten([
     for r in var.roles : [
       for arn in coalesce(try(r.managed_policy_arns, []), []) : {
@@ -15,17 +16,6 @@ locals {
       }
     ]
   ])
-
-  role_inline_policies = merge([
-    for r in var.roles : {
-      for pname, pjson in coalesce(try(r.inline_policies, {}), {}) :
-      "${r.name}|${pname}" => {
-        role        = r.name
-        policy_name = pname
-        policy_json = pjson
-      }
-    }
-  ]...)
 
   group_policy_attachments = flatten([
     for g in var.groups : [
@@ -37,17 +27,6 @@ locals {
     ]
   ])
 
-  group_inline_policies = merge([
-    for g in var.groups : {
-      for pname, pjson in coalesce(try(g.inline_policies, {}), {}) :
-      "${g.name}|${pname}" => {
-        group       = g.name
-        policy_name = pname
-        policy_json = pjson
-      }
-    }
-  ]...)
-
   user_policy_attachments = flatten([
     for u in var.users : [
       for arn in coalesce(try(u.managed_policy_arns, []), []) : {
@@ -58,24 +37,64 @@ locals {
     ]
   ])
 
-  user_inline_policies = merge([
-    for u in var.users : {
-      for pname, pjson in coalesce(try(u.inline_policies, {}), {}) :
-      "${u.name}|${pname}" => {
-        user        = u.name
-        policy_name = pname
-        policy_json = pjson
-      }
+  # --- Inline policies as maps (no varargs) ---
+  role_inline_policies = tomap({
+    for item in flatten([
+      for r in var.roles : [
+        for pname, pjson in coalesce(try(r.inline_policies, {}), {}) : {
+          key         = "${r.name}|${pname}"
+          role        = r.name
+          policy_name = pname
+          policy_json = pjson
+        }
+      ]
+    ]) : item.key => {
+      role        = item.role
+      policy_name = item.policy_name
+      policy_json = item.policy_json
     }
-  ]...)
+  })
 
-  user_group_memberships = merge([
-    for u in var.users : (
-      length(try(u.groups, [])) > 0 ?
-      { "${u.name}" = { user = u.name, groups = u.groups } } :
-      {}
-    )
-  ]...)
+  group_inline_policies = tomap({
+    for item in flatten([
+      for g in var.groups : [
+        for pname, pjson in coalesce(try(g.inline_policies, {}), {}) : {
+          key         = "${g.name}|${pname}"
+          group       = g.name
+          policy_name = pname
+          policy_json = pjson
+        }
+      ]
+    ]) : item.key => {
+      group       = item.group
+      policy_name = item.policy_name
+      policy_json = item.policy_json
+    }
+  })
+
+  user_inline_policies = tomap({
+    for item in flatten([
+      for u in var.users : [
+        for pname, pjson in coalesce(try(u.inline_policies, {}), {}) : {
+          key         = "${u.name}|${pname}"
+          user        = u.name
+          policy_name = pname
+          policy_json = pjson
+        }
+      ]
+    ]) : item.key => {
+      user        = item.user
+      policy_name = item.policy_name
+      policy_json = item.policy_json
+    }
+  })
+
+  # --- Group memberships map (no varargs) ---
+  user_group_memberships = {
+    for u in var.users :
+    u.name => { user = u.name, groups = try(u.groups, []) }
+    if length(try(u.groups, [])) > 0
+  }
 }
 
 ##############################################
@@ -176,9 +195,9 @@ data "aws_iam_policy_document" "managed" {
   dynamic "statement" {
     for_each = try(each.value.statements, [])
     content {
-      sid     = try(statement.value.sid, null)
-      effect  = statement.value.effect
-      actions = statement.value.actions
+      sid       = try(statement.value.sid, null)
+      effect    = statement.value.effect
+      actions   = statement.value.actions
       resources = statement.value.resources
 
       dynamic "condition" {
@@ -220,9 +239,9 @@ resource "aws_iam_role" "this" {
 
 # Attach managed policies to roles
 resource "aws_iam_role_policy_attachment" "this" {
-  for_each  = { for x in local.role_policy_attachments : x.key => x }
-  role      = aws_iam_role.this[each.value.role].name
-  policy_arn= each.value.policy_arn
+  for_each   = { for x in local.role_policy_attachments : x.key => x }
+  role       = aws_iam_role.this[each.value.role].name
+  policy_arn = each.value.policy_arn
 }
 
 # Inline policies for roles
@@ -254,9 +273,9 @@ resource "aws_iam_group" "this" {
 }
 
 resource "aws_iam_group_policy_attachment" "this" {
-  for_each  = { for x in local.group_policy_attachments : x.key => x }
-  group     = aws_iam_group.this[each.value.group].name
-  policy_arn= each.value.policy_arn
+  for_each   = { for x in local.group_policy_attachments : x.key => x }
+  group      = aws_iam_group.this[each.value.group].name
+  policy_arn = each.value.policy_arn
 }
 
 resource "aws_iam_group_policy" "this" {
@@ -280,9 +299,9 @@ resource "aws_iam_user" "this" {
 
 # Attach managed policies to users
 resource "aws_iam_user_policy_attachment" "this" {
-  for_each  = { for x in local.user_policy_attachments : x.key => x }
-  user      = aws_iam_user.this[each.value.user].name
-  policy_arn= each.value.policy_arn
+  for_each   = { for x in local.user_policy_attachments : x.key => x }
+  user       = aws_iam_user.this[each.value.user].name
+  policy_arn = each.value.policy_arn
 }
 
 # Inline policies for users
