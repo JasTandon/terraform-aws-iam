@@ -16,7 +16,7 @@ provider "aws" {
 }
 
 module "iam" {
-  source  = "YOUR_GH_USER/iam/aws"
+  source  = "JasTandon/iam/aws"
   version = "0.1.0"
 
   tags = {
